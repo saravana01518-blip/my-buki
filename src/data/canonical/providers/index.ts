@@ -8,6 +8,7 @@
 
 import { FINANCE_SOURCES, HR_SOURCES, type FinanceSource, type HrSource } from "../types";
 import { bamboohrProvider } from "../bamboohr/provider";
+import { sageProvider } from "../sage/provider";
 import type { FinanceProvider, HrProvider, ProviderRegistry } from "./types";
 
 export type { FinanceProvider, HrProvider, ProviderHealth, ProviderRegistry } from "./types";
@@ -17,7 +18,7 @@ export const providers: ProviderRegistry = {
     bamboohr: bamboohrProvider,
   },
   finance: {
-    // register sage here: sage: sageProvider,
+    sage: sageProvider,
   },
 };
 

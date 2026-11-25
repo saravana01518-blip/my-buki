@@ -67,9 +67,16 @@ async function syncOnce(): Promise<boolean> {
   return report.ok;
 }
 
-async function cron(): Promise<never> {
+function resolveIntervalMs(): number {
+  const envMs = Number(process.env.SAGE_SYNC_INTERVAL_MS);
+  if (Number.isFinite(envMs) && envMs > 0) return envMs;
   const intervalS = Math.max(5, Number(process.env.SYNC_INTERVAL_SECONDS) || 300);
-  console.log(`Syncing every ${intervalS}s. Ctrl+C to stop.`);
+  return intervalS * 1000;
+}
+
+async function cron(): Promise<never> {
+  const intervalMs = resolveIntervalMs();
+  console.log(`Syncing every ${(intervalMs / 1000).toFixed(1).replace(/\.0$/, "")}s. Ctrl+C to stop.`);
   let running = false;
   const tick = async () => {
     if (running) return; // a slow source does not get a second sync on top of the first
@@ -83,7 +90,7 @@ async function cron(): Promise<never> {
     }
   };
   await tick();
-  setInterval(tick, intervalS * 1000);
+  setInterval(tick, intervalMs);
   return new Promise(() => {}); // runs until Ctrl+C
 }
 
@@ -236,6 +243,7 @@ async function main(argv: string[]): Promise<boolean> {
     case "health":
       return health();
     case "sync":
+      if (rest.includes("--watch")) return cron();
       return syncOnce();
     case "cron":
       return cron();

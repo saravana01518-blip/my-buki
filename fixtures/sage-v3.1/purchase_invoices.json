@@ -1,0 +1,93 @@
+{
+  "$total": 4,
+  "$page": 1,
+  "$next": null,
+  "$back": null,
+  "$itemsPerPage": 100,
+  "$items": [
+    {
+      "id": "pi-4001",
+      "invoice_number": "AWS-2026-10",
+      "contact": { "id": "ct-aws", "displayed_as": "Amazon Web Services EMEA" },
+      "date": "2026-10-03",
+      "due_date": "2026-11-02",
+      "status": { "id": "PAID", "displayed_as": "Paid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 1800,
+      "outstanding_amount": 0,
+      "invoice_lines": [
+        {
+          "description": "Cloud hosting October 2026",
+          "ledger_account": { "id": "la-software", "displayed_as": "Software subscriptions" },
+          "net_amount": 1500,
+          "tax_amount": 300,
+          "total_amount": 1800
+        }
+      ],
+      "updated_at": "2026-10-03T10:00:00Z"
+    },
+    {
+      "id": "pi-4002",
+      "invoice_number": "FIG-2026-10",
+      "contact": { "id": "ct-figma", "displayed_as": "Figma Inc." },
+      "date": "2026-10-18",
+      "due_date": "2026-11-17",
+      "status": { "id": "UNPAID", "displayed_as": "Unpaid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 1020,
+      "outstanding_amount": 1020,
+      "invoice_lines": [
+        {
+          "description": "Design seats October 2026",
+          "ledger_account": { "id": "la-software", "displayed_as": "Software subscriptions" },
+          "net_amount": 850,
+          "tax_amount": 170,
+          "total_amount": 1020
+        }
+      ],
+      "updated_at": "2026-10-18T14:00:00Z"
+    },
+    {
+      "id": "pi-4003",
+      "invoice_number": "EUR-2026-10",
+      "contact": { "id": "ct-eurostar", "displayed_as": "Eurostar International" },
+      "date": "2026-10-21",
+      "due_date": "2026-10-21",
+      "status": { "id": "PAID", "displayed_as": "Paid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 480,
+      "outstanding_amount": 0,
+      "invoice_lines": [
+        {
+          "description": "London-Paris client travel",
+          "ledger_account": { "id": "la-travel", "displayed_as": "Travel & Accommodation" },
+          "net_amount": 400,
+          "tax_amount": 80,
+          "total_amount": 480
+        }
+      ],
+      "updated_at": "2026-10-21T09:00:00Z"
+    },
+    {
+      "id": "pi-4004",
+      "invoice_number": "AWS-2026-11",
+      "contact": { "id": "ct-aws", "displayed_as": "Amazon Web Services EMEA" },
+      "date": "2026-11-03",
+      "due_date": "2026-12-03",
+      "status": { "id": "UNPAID", "displayed_as": "Unpaid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 1920,
+      "outstanding_amount": 1920,
+      "invoice_lines": [
+        {
+          "description": "Cloud hosting November 2026",
+          "ledger_account": { "id": "la-software", "displayed_as": "Software subscriptions" },
+          "net_amount": 1600,
+          "tax_amount": 320,
+          "total_amount": 1920
+        }
+      ],
+      "updated_at": "2026-11-03T10:00:00Z"
+    }
+  ]
+}

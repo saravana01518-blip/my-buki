@@ -1,0 +1,55 @@
+{
+  "$total": 6,
+  "$page": 1,
+  "$next": null,
+  "$back": null,
+  "$itemsPerPage": 100,
+  "$items": [
+    {
+      "id": "ct-pinecrest",
+      "displayed_as": "Pinecrest Health",
+      "name": "Pinecrest Health",
+      "contact_types": [{ "id": "CUSTOMER", "displayed_as": "Customer" }],
+      "email": "billing@pinecrest.example",
+      "updated_at": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "ct-tolliver",
+      "displayed_as": "Tolliver & Reed LLP",
+      "name": "Tolliver & Reed LLP",
+      "contact_types": [{ "id": "CUSTOMER", "displayed_as": "Customer" }],
+      "email": "ap@tolliver.example",
+      "updated_at": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "ct-northgate",
+      "displayed_as": "Northgate Analytics",
+      "name": "Northgate Analytics",
+      "contact_types": [{ "id": "CUSTOMER", "displayed_as": "Customer" }],
+      "email": null,
+      "updated_at": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "ct-aws",
+      "displayed_as": "Amazon Web Services EMEA",
+      "name": "Amazon Web Services EMEA",
+      "contact_types": [{ "id": "VENDOR", "displayed_as": "Supplier" }],
+      "email": "aws-billing@example.com",
+      "updated_at": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "ct-figma",
+      "displayed_as": "Figma Inc.",
+      "name": "Figma Inc.",
+      "contact_types": [{ "id": "VENDOR", "displayed_as": "Supplier" }],
+      "updated_at": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "ct-eurostar",
+      "displayed_as": "Eurostar International",
+      "name": "Eurostar International",
+      "contact_types": [{ "id": "VENDOR", "displayed_as": "Supplier" }],
+      "updated_at": "2026-10-01T10:00:00Z"
+    }
+  ]
+}

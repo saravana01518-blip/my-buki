@@ -1,0 +1,66 @@
+{
+  "$total": 5,
+  "$page": 1,
+  "$next": null,
+  "$back": null,
+  "$itemsPerPage": 100,
+  "$items": [
+    {
+      "id": "bt-5001",
+      "bank_account": { "id": "la-bank-op", "displayed_as": "Operating Bank Account" },
+      "date": "2026-10-01",
+      "total_amount": 45000,
+      "transaction_type": { "id": "CUSTOMER_RECEIPT", "displayed_as": "Customer Receipt" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "description": "Opening receipts & Q3 settlement",
+      "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+      "contact": { "id": "ct-northgate", "displayed_as": "Northgate Analytics" },
+      "updated_at": "2026-10-01T12:00:00Z"
+    },
+    {
+      "id": "bt-5002",
+      "bank_account": { "id": "la-bank-op", "displayed_as": "Operating Bank Account" },
+      "date": "2026-10-05",
+      "total_amount": 1800,
+      "transaction_type": { "id": "VENDOR_PAYMENT", "displayed_as": "Vendor Payment" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "description": "AWS October settlement",
+      "ledger_account": { "id": "la-software", "displayed_as": "Software subscriptions" },
+      "contact": { "id": "ct-aws", "displayed_as": "Amazon Web Services EMEA" },
+      "updated_at": "2026-10-05T12:00:00Z"
+    },
+    {
+      "id": "bt-5003",
+      "bank_account": { "id": "la-bank-op", "displayed_as": "Operating Bank Account" },
+      "date": "2026-10-15",
+      "total_amount": -10000,
+      "transaction_type": { "id": "BANK_TRANSFER", "displayed_as": "Bank Transfer" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "description": "Transfer to Reserve Savings",
+      "transfer_id": "tr-900",
+      "updated_at": "2026-10-15T12:00:00Z"
+    },
+    {
+      "id": "bt-5004",
+      "bank_account": { "id": "la-bank-res", "displayed_as": "Reserve Savings Account" },
+      "date": "2026-10-15",
+      "total_amount": 10000,
+      "transaction_type": { "id": "BANK_TRANSFER", "displayed_as": "Bank Transfer" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "description": "Transfer from Operating Bank",
+      "transfer_id": "tr-900",
+      "updated_at": "2026-10-15T12:00:00Z"
+    },
+    {
+      "id": "bt-5005",
+      "bank_account": { "id": "la-bank-op", "displayed_as": "Operating Bank Account" },
+      "date": "2026-10-15",
+      "total_amount": 10000,
+      "transaction_type": { "id": "BANK_TRANSFER", "displayed_as": "Bank Transfer" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "description": "Duplicate credit leg",
+      "is_duplicate_credit": true,
+      "updated_at": "2026-10-15T12:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "$total": 6,
+  "$page": 1,
+  "$next": null,
+  "$back": null,
+  "$itemsPerPage": 100,
+  "$items": [
+    {
+      "id": "si-3001",
+      "invoice_number": "SI-3001",
+      "contact": { "id": "ct-pinecrest", "displayed_as": "Pinecrest Health" },
+      "date": "2026-10-05",
+      "due_date": "2026-10-20",
+      "status": { "id": "UNPAID", "displayed_as": "Unpaid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 9500,
+      "outstanding_amount": 9500,
+      "invoice_lines": [
+        {
+          "description": "Q4 Advisory Retainer",
+          "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+          "net_amount": 9500,
+          "tax_amount": 0
+        }
+      ],
+      "updated_at": "2026-10-05T12:00:00Z"
+    },
+    {
+      "id": "si-3002",
+      "invoice_number": "SI-3002",
+      "contact": { "id": "ct-tolliver", "displayed_as": "Tolliver & Reed LLP" },
+      "date": "2026-10-12",
+      "due_date": "2026-11-01",
+      "status": { "id": "PART_PAID", "displayed_as": "Part Paid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 6000,
+      "outstanding_amount": 2500,
+      "invoice_lines": [
+        {
+          "description": "Legal Ops Integration",
+          "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+          "net_amount": 6000,
+          "tax_amount": 0
+        }
+      ],
+      "updated_at": "2026-10-12T15:30:00Z"
+    },
+    {
+      "id": "si-3003",
+      "invoice_number": "SI-3003",
+      "contact": { "id": "ct-northgate", "displayed_as": "Northgate Analytics" },
+      "date": "2026-11-10",
+      "due_date": "2026-12-10",
+      "status": { "id": "UNPAID", "displayed_as": "Unpaid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 14000,
+      "outstanding_amount": 14000,
+      "invoice_lines": [
+        {
+          "description": "Data Warehouse Phase 2",
+          "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+          "net_amount": 14000,
+          "tax_amount": 0
+        }
+      ],
+      "updated_at": "2026-11-10T09:15:00Z"
+    },
+    {
+      "id": "si-3004",
+      "invoice_number": "SI-3004",
+      "contact": { "id": "ct-pinecrest", "displayed_as": "Pinecrest Health" },
+      "date": "2026-11-02",
+      "due_date": null,
+      "status": { "id": "UNPAID", "displayed_as": "Unpaid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 3200,
+      "outstanding_amount": 3200,
+      "invoice_lines": [
+        {
+          "description": "Ad-hoc Workshop",
+          "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+          "net_amount": 3200,
+          "tax_amount": 0
+        }
+      ],
+      "updated_at": "2026-11-02T11:00:00Z"
+    },
+    {
+      "id": "si-3005",
+      "invoice_number": "SI-3005",
+      "contact": { "id": "ct-northgate", "displayed_as": "Northgate Analytics" },
+      "date": "2026-09-15",
+      "due_date": "2026-09-30",
+      "status": { "id": "PAID", "displayed_as": "Paid" },
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 18000,
+      "outstanding_amount": 0,
+      "invoice_lines": [
+        {
+          "description": "Data Warehouse Phase 1",
+          "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+          "net_amount": 18000,
+          "tax_amount": 0
+        }
+      ],
+      "updated_at": "2026-09-30T17:00:00Z"
+    },
+    {
+      "id": "si-3006",
+      "invoice_number": "SI-3006",
+      "contact": { "id": "ct-tolliver", "displayed_as": "Tolliver & Reed LLP" },
+      "date": "2026-10-25",
+      "due_date": "2026-11-15",
+      "status": { "id": "VOID", "displayed_as": "Void" },
+      "void_reason": "Duplicate entry",
+      "currency": { "id": "GBP", "displayed_as": "Pound Sterling (GBP)" },
+      "total_amount": 1000,
+      "outstanding_amount": 0,
+      "invoice_lines": [
+        {
+          "description": "Duplicate Consulting",
+          "ledger_account": { "id": "la-sales", "displayed_as": "Consulting Revenue" },
+          "net_amount": 1000,
+          "tax_amount": 0
+        }
+      ],
+      "updated_at": "2026-10-26T08:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$total": 5,
+  "$page": 1,
+  "$next": null,
+  "$back": null,
+  "$itemsPerPage": 100,
+  "$items": [
+    {
+      "id": "la-bank-op",
+      "displayed_as": "Operating Bank Account",
+      "nominal_code": 1200,
+      "ledger_account_type": { "id": "BANK", "displayed_as": "Bank" },
+      "updated_at": "2026-10-01T09:00:00Z"
+    },
+    {
+      "id": "la-bank-res",
+      "displayed_as": "Reserve Savings Account",
+      "nominal_code": 1210,
+      "ledger_account_type": { "id": "BANK", "displayed_as": "Bank" },
+      "updated_at": "2026-10-01T09:00:00Z"
+    },
+    {
+      "id": "la-sales",
+      "displayed_as": "Consulting Revenue",
+      "nominal_code": 4000,
+      "ledger_account_type": { "id": "SALES", "displayed_as": "Sales" },
+      "updated_at": "2026-10-01T09:00:00Z"
+    },
+    {
+      "id": "la-software",
+      "displayed_as": "Software subscriptions",
+      "nominal_code": 7502,
+      "ledger_account_type": { "id": "OVERHEADS", "displayed_as": "Overheads" },
+      "updated_at": "2026-10-01T09:00:00Z"
+    },
+    {
+      "id": "la-travel",
+      "displayed_as": "Travel & Accommodation",
+      "nominal_code": 7400,
+      "ledger_account_type": { "id": "OVERHEADS", "displayed_as": "Overheads" },
+      "updated_at": "2026-10-01T09:00:00Z"
+    }
+  ]
+}

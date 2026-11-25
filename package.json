@@ -15,7 +15,11 @@
     "ask": "tsx src/cli.ts ask",
     "check": "tsx src/cli.ts check",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "start": "tsx src/server.ts",
+    "start:web": "tsx src/server.ts",
+    "sage:auth": "tsx src/data/canonical/sage/auth.ts"
   },
   "devDependencies": {
     "@types/node": "^22",

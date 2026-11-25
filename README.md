@@ -24,12 +24,36 @@ Every command:
 | `npm run mock` | The mock BambooHR on port 4010 |
 | `npm run health` | Each configured provider's `health()` and what the store last synced |
 | `npm run sync` | One sync of every configured domain, one line per run, exit 1 if a run failed |
-| `npm run cron` | The same on a loop, every `SYNC_INTERVAL_SECONDS` (300 by default, 5 at least) |
+| `npm run sync -- --watch` | Scheduled sync loop (uses `SAGE_SYNC_INTERVAL_MS` or `SYNC_INTERVAL_SECONDS`) |
+| `npm run cron` | The same scheduled loop, every `SYNC_INTERVAL_SECONDS` (300 by default, 5 at least) |
+| `npm run sage:auth` | One-time Sage OAuth2 authorization flow, saving tokens to `.data/sage-tokens.json` |
 | `npm run show -- people` | The People module, as text |
 | `npm run show -- finance` | The Finance module, as text |
 | `npm run ask -- "<question>"` | The brief: an answer, its figures, and what it cites |
 | `npm run check -- <file.json>` | Validate a canonical finance set, then show what it answers |
-| `npm test`, `npm run typecheck` | vitest and tsc |
+| `npm test`, `npm run typecheck`, `npm run build` | vitest and tsc |
+
+### Sage Business Cloud Accounting v3.1 setup
+
+1. **Fresh clone & install:**
+   ```
+   npm install
+   cp .env.example .env
+   ```
+2. **Choose Fixture Mode or Live Sage OAuth2:**
+   - **Fixture mode (default in `.env.example`):** `FINANCE_SOURCE=sage` and `SAGE_USE_FIXTURES=true` reads recorded v3.1 payloads from `fixtures/sage-v3.1/`.
+   - **Live Sage trial business:** Set `SAGE_USE_FIXTURES=false`, fill `SAGE_CLIENT_ID`, `SAGE_CLIENT_SECRET`, and `SAGE_CALLBACK_URL` in `.env`, then run `npm run sage:auth` to authorize and persist tokens to `.data/sage-tokens.json`. If `/purchase_invoices` returns `HTTP 405` on a plan-gated trial, the client falls back cleanly to `fixtures/sage-v3.1/purchase_invoices.json`.
+3. **Sync, inspect, and ask briefs:**
+   ```
+   npm run sync
+   npm run show -- finance
+   npm run ask -- "Who owes us money?"
+   npm run ask -- "What did we spend on software last month?"
+   ```
+4. **Scheduled polling (`--watch`):**
+   ```
+   SAGE_SYNC_INTERVAL_MS=5000 npm run sync -- --watch
+   ```
 
 ### 60-second smoke test
 

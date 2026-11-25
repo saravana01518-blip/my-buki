@@ -1,0 +1,25 @@
+# Render Blueprint Specification (render.yaml)
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: buki-connector-kit
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:web
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: FINANCE_SOURCE
+        value: "sage"
+      - key: SAGE_USE_FIXTURES
+        value: "true"
+      - key: HR_SOURCE
+        value: "bamboohr"
+      - key: BAMBOOHR_BASE_URL
+        value: "http://localhost:4010"
+      - key: BAMBOOHR_COMPANY
+        value: "halden"
+      - key: BAMBOOHR_API_KEY
+        value: "sat-bamboo-key-123"
