@@ -488,8 +488,10 @@ function renderHtmlApp(initialState: unknown): string {
                 </div>
                 <span class="text-[11px] font-mono-code text-slate-400" id="active-records-badge">25 records</span>
               </div>
-              <p class="text-[14px] font-semibold text-slate-900 leading-relaxed m-0" id="active-answer-text"></p>
+              <div class="flex flex-wrap items-baseline gap-2.5" id="active-highlight-row"></div>
+              <p class="text-[13px] font-medium text-slate-700 leading-relaxed m-0" id="active-answer-text"></p>
               <div class="flex flex-wrap gap-2" id="active-figures-row"></div>
+              <div class="bg-white rounded-lg border border-slate-200/90 p-3 text-[12px] text-slate-600 leading-relaxed hidden" id="active-rule-box"></div>
             </div>
           </div>
 
@@ -502,11 +504,12 @@ function renderHtmlApp(initialState: unknown): string {
                   <h2 class="text-base font-bold text-slate-900 tracking-tight">Sales Invoices &amp; Receivables</h2>
                   <span class="text-[11px] font-mono-code bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200/60 font-semibold" id="inv-count-pill">5 live</span>
                 </div>
-                <div class="inline-flex bg-slate-100 p-1 rounded-lg border border-slate-200/60 text-[11px] font-mono-code font-semibold">
-                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase bg-white text-slate-900 shadow-xs cursor-pointer font-semibold" onclick="filterInvoices('all', this)">All</button>
-                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer flex items-center gap-1 font-medium" onclick="filterInvoices('overdue', this)"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Overdue</button>
-                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer font-medium" onclick="filterInvoices('open', this)">Open</button>
-                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer font-medium" onclick="filterInvoices('paid', this)">Paid</button>
+                <div class="inline-flex flex-wrap bg-slate-100 p-1 rounded-lg border border-slate-200/60 text-[11px] font-mono-code font-semibold" id="invoice-filter-tabs">
+                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase bg-white text-slate-900 shadow-xs cursor-pointer font-semibold" data-filter="all" onclick="filterInvoices('all', this)">All</button>
+                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer flex items-center gap-1 font-medium" data-filter="overdue" onclick="filterInvoices('overdue', this)"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Overdue</button>
+                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer font-medium" data-filter="open" onclick="filterInvoices('open', this)">Open</button>
+                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer font-medium" data-filter="noduedate" onclick="filterInvoices('noduedate', this)">No Due Date</button>
+                  <button class="filter-tab-btn px-3 py-1 rounded-md uppercase text-slate-500 hover:text-slate-800 cursor-pointer font-medium" data-filter="paid" onclick="filterInvoices('paid', this)">Paid</button>
                 </div>
               </div>
 
@@ -692,18 +695,38 @@ function renderHtmlApp(initialState: unknown): string {
       \`;
 
       const soft = fin.spendByAccount.find(s => s.name.toLowerCase().includes('software'));
+      const overdueItems = fin.overdueReceivables.invoices.map(i => esc(i.number) + ' ' + esc(i.customer) + ' ' + esc(fmtMoney(i.currency, i.outstanding)) + ' due ' + esc(fmtDateShort(i.dueDate))).join('; ');
       document.getElementById('exec-summary-text').innerHTML =
         'Operating cash stands at <strong class="text-slate-900 font-mono-code">' + esc(op ? fmtMoneyMap(op.balance) : 'none') + '</strong>' +
         (res ? ' (' + esc(fmtMoneyMap(res.balance)) + ' reserve)' : '') +
         '. Invoiced <strong class="text-slate-900 font-mono-code">' + esc(fmtMoneyMap(fin.invoiced.thisMonth.total)) + '</strong> in ' + esc(fin.invoiced.thisMonth.period) +
-        '. Receivables alert: <strong class="text-rose-600 font-mono-code">' + esc(fmtMoneyMap(fin.overdueReceivables.total)) + ' overdue</strong> across ' + fin.overdueReceivables.count + ' invoices' +
+        '. Receivables alert: <strong class="text-rose-600 font-mono-code">' + esc(fmtMoneyMap(fin.overdueReceivables.total)) + ' overdue</strong> (' + overdueItems + ')' +
+        (fin.overdueReceivables.uncountedNoDueDate ? '; ' + fin.overdueReceivables.uncountedNoDueDate + ' open invoice without due date excluded' : '') +
         (soft ? '. ' + esc(fin.invoiced.lastMonth.period) + ' software spend: <strong class="text-slate-900 font-mono-code">' + esc(fmtMoneyMap(soft.total)) + '</strong>.' : '.');
     }
 
     function renderInvoices() {
-      const rows = STATE.finance.salesInvoices.filter(inv => {
+      const allInv = STATE.finance.salesInvoices;
+      const counts = {
+        all: allInv.length,
+        overdue: allInv.filter(i => i.isOverdue).length,
+        open: allInv.filter(i => i.status === 'unpaid' || i.status === 'part_paid').length,
+        noduedate: allInv.filter(i => !i.dueDate && (i.status === 'unpaid' || i.status === 'part_paid')).length,
+        paid: allInv.filter(i => i.status === 'paid').length,
+      };
+      document.querySelectorAll('#invoice-filter-tabs .filter-tab-btn').forEach(btn => {
+        const key = btn.getAttribute('data-filter');
+        const labels = { all: 'All', overdue: 'Overdue', open: 'Open', noduedate: 'No Due Date', paid: 'Paid' };
+        if (key && labels[key]) {
+          const dot = key === 'overdue' ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>' : '';
+          btn.innerHTML = dot + labels[key] + ' (' + counts[key] + ')';
+        }
+      });
+
+      const rows = allInv.filter(inv => {
         if (ACTIVE_FILTER === 'overdue' && !inv.isOverdue) return false;
         if (ACTIVE_FILTER === 'open' && inv.status !== 'unpaid' && inv.status !== 'part_paid') return false;
+        if (ACTIVE_FILTER === 'noduedate' && (inv.dueDate || (inv.status !== 'unpaid' && inv.status !== 'part_paid'))) return false;
         if (ACTIVE_FILTER === 'paid' && inv.status !== 'paid') return false;
         if (SEARCH_TERM) {
           const hay = (inv.number + ' ' + inv.customer + ' ' + inv.description).toLowerCase();
@@ -725,7 +748,7 @@ function renderHtmlApp(initialState: unknown): string {
         }
         const dueCol = inv.dueDate
           ? '<div class="font-mono-code font-semibold ' + (inv.isOverdue ? 'text-rose-600' : 'text-slate-800') + '">' + esc(fmtDateShort(inv.dueDate)) + '</div>'
-          : '<div class="font-mono-code text-slate-400">—</div><div class="text-[10px] font-mono-code text-slate-400">Absent in Sage</div>';
+          : '<div class="font-mono-code text-amber-700 font-semibold">— Absent in Sage</div><div class="text-[10px] font-mono-code text-slate-400">Omitted (never defaulted)</div>';
 
         return \`
           <tr class="hover:bg-slate-50/80 transition-colors bg-white">
@@ -870,14 +893,41 @@ function renderHtmlApp(initialState: unknown): string {
     }
 
     function renderBrief(res, qText) {
-      document.getElementById('active-query-text').textContent = 'Query: "' + (qText || res.question || '') + '"';
+      const q = qText || res.question || '';
+      document.getElementById('active-query-text').textContent = 'Query: "' + q + '"';
       document.getElementById('active-answer-text').textContent = res.answer || '';
       const cited = res.cited || {};
       document.getElementById('active-source-badge').textContent = 'Source: ' + (cited.source ? cited.source.toUpperCase() : 'None');
       document.getElementById('active-records-badge').textContent = (cited.records || 0) + ' records';
-      document.getElementById('active-figures-row').innerHTML = (res.figures || []).map(f =>
+
+      const figs = res.figures || [];
+      const primary = figs[0];
+      const highlightRow = document.getElementById('active-highlight-row');
+      if (primary) {
+        const isOverdueQ = q.toLowerCase().includes('owe') || q.toLowerCase().includes('overdue');
+        highlightRow.innerHTML =
+          '<span class="text-2xl md:text-3xl font-extrabold font-mono-code tracking-tight ' + (isOverdueQ ? 'text-rose-600' : 'text-indigo-700') + '">' + esc(primary.value) + '</span>' +
+          '<span class="text-sm font-semibold text-slate-600">' + esc(primary.label) + '</span>';
+      } else {
+        highlightRow.innerHTML = '';
+      }
+
+      document.getElementById('active-figures-row').innerHTML = figs.map(f =>
         '<span class="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-mono-code"><span class="text-slate-500">' + esc(f.label) + ':</span> <strong class="text-slate-900">' + esc(f.value) + '</strong></span>'
       ).join('');
+
+      const ruleBox = document.getElementById('active-rule-box');
+      if (q.toLowerCase().includes('owe') || q.toLowerCase().includes('overdue')) {
+        const uncounted = STATE.finance.overdueReceivables.uncountedNoDueDate;
+        ruleBox.classList.remove('hidden');
+        ruleBox.innerHTML = '<strong class="text-indigo-700">Accounting Rule:</strong> Overdue receivables include only open sales invoices with <code>dueDate &lt; today</code>. ' +
+          (uncounted ? uncounted + ' open invoice without a due date on file (<code>SI-3004</code>) is kept in the store with <code>dueDate</code> omitted and excluded from overdue totals.' : '');
+      } else if (q.toLowerCase().includes('software') || q.toLowerCase().includes('spend')) {
+        ruleBox.classList.remove('hidden');
+        ruleBox.innerHTML = '<strong class="text-indigo-700">Accounting Rule:</strong> Sums <code>net_amount</code> (excluding tax) on purchase invoice lines posted to Software ledger accounts in the target month.';
+      } else {
+        ruleBox.classList.add('hidden');
+      }
     }
 
     async function askLive(q) {
