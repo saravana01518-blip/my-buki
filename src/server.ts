@@ -540,9 +540,10 @@ function renderHtmlApp(initialState: unknown): string {
               <div class="p-4 bg-slate-50/90 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono-code" id="invoices-footer"></div>
             </div>
 
-            <!-- RIGHT: Spend by Category & Connector Health -->
+            <!-- RIGHT: Spend by Category, Biggest Customers & Connector Health -->
             <div class="xl:col-span-4 flex flex-col gap-6">
               <div class="fintech-card p-5 flex flex-col gap-4" id="spend-card"></div>
+              <div class="fintech-card p-5 flex flex-col gap-4" id="customers-card"></div>
               <div class="fintech-card p-5 flex flex-col gap-4" id="health-card"></div>
             </div>
           </div>
@@ -609,28 +610,39 @@ function renderHtmlApp(initialState: unknown): string {
 
     function renderKpis() {
       const fin = STATE.finance;
+      const health = STATE.health;
       const op = fin.cash.find(c => c.name.toLowerCase().includes('operating')) || fin.cash[0];
       const res = fin.cash.find(c => c.name.toLowerCase().includes('reserve'));
+      const totalCash = {};
+      for (const c of fin.cash) {
+        for (const [ccy, v] of Object.entries(c.balance)) totalCash[ccy] = (totalCash[ccy] || 0) + v;
+      }
       const totalSpend = {};
       for (const s of fin.spendByAccount) {
         for (const [ccy, v] of Object.entries(s.total)) totalSpend[ccy] = (totalSpend[ccy] || 0) + v;
       }
 
-      document.getElementById('synced-badge').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Synced (' + fin.recordCounts.total + ' Sage records)';
-      document.getElementById('sidebar-counts').textContent = fin.recordCounts.total + ' Sage / ' + STATE.people.totalRecords + ' BambooHR';
-      document.getElementById('nav-people-count').textContent = STATE.people.totalRecords;
+      const rc = fin.recordCounts;
+      document.getElementById('synced-badge').innerHTML =
+        '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>' +
+        'Sage: ' + rc.total + ' (' + rc.accounts + ' accts, ' + rc.parties + ' parties, ' + rc.invoices + ' inv, ' + rc.bankTransactions + ' txns) &bull; BambooHR: ' + health.connectors.hr.totalRecords;
+      if (fin.syncedAt) {
+        document.getElementById('sync-time-val').textContent = 'Synced ' + new Date(fin.syncedAt).toUTCString().replace(' GMT', ' UTC');
+      }
+      document.getElementById('sidebar-counts').textContent = rc.total + ' Sage / ' + health.connectors.hr.totalRecords + ' BambooHR';
+      document.getElementById('nav-people-count').textContent = health.connectors.hr.totalRecords;
 
       document.getElementById('kpi-grid').innerHTML = \`
         <div class="fintech-card p-5 flex flex-col justify-between">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono-code">Bank Cash</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono-code">Cash on Hand</span>
             <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><span class="material-symbols-outlined text-[16px]">account_balance</span></div>
           </div>
           <div class="py-3">
-            <div class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono-code">\${esc(op ? fmtMoneyMap(op.balance) : 'none')}</div>
-            <div class="flex items-center gap-2 mt-1.5">
-              <span class="text-[12px] text-slate-500 font-medium">Operating Cash</span>
-              \${res ? '<span class="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded-full font-mono-code border border-slate-200/60">' + esc(fmtMoneyMap(res.balance)) + ' Reserve</span>' : ''}
+            <div class="text-3xl font-extrabold text-slate-900 tracking-tight font-mono-code">\${esc(fmtMoneyMap(totalCash))}</div>
+            <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+              \${op ? '<span class="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded-full font-mono-code border border-slate-200/60">Op: ' + esc(fmtMoneyMap(op.balance)) + '</span>' : ''}
+              \${res ? '<span class="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded-full font-mono-code border border-slate-200/60">Res: ' + esc(fmtMoneyMap(res.balance)) + '</span>' : ''}
             </div>
           </div>
           <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono-code text-slate-500">
@@ -812,6 +824,35 @@ function renderHtmlApp(initialState: unknown): string {
                 <div class="text-[11px] font-mono-code text-slate-500">\${s.lines} purchase invoice line\${s.lines === 1 ? '' : 's'}</div>
               </div>\`;
           }).join('')}
+        </div>
+      \`;
+
+      document.getElementById('customers-card').innerHTML = \`
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 tracking-tight m-0">Biggest Customers</h3>
+            <span class="text-[11px] text-slate-400 font-mono-code">By total sales invoiced</span>
+          </div>
+          <span class="text-[10px] font-mono-code font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-200/60">\${fin.biggestCustomers.length} Accounts</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-[12px]">
+            <thead>
+              <tr class="border-b border-slate-200/70 text-[10px] font-mono-code text-slate-400 uppercase">
+                <th class="py-2 pr-2">Customer</th>
+                <th class="py-2 px-2 text-right">Invoiced</th>
+                <th class="py-2 pl-2 text-right">Outstanding</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              \${fin.biggestCustomers.map(c => \`
+                <tr>
+                  <td class="py-2.5 pr-2 font-semibold text-slate-800">\${esc(c.name)} <span class="text-[10px] text-slate-400 font-mono-code">(\${c.invoices})</span></td>
+                  <td class="py-2.5 px-2 text-right font-mono-code font-bold text-slate-900">\${esc(fmtMoneyMap(c.invoiced))}</td>
+                  <td class="py-2.5 pl-2 text-right font-mono-code \${Object.keys(c.outstanding).length ? 'text-rose-600 font-semibold' : 'text-slate-400'}">\${Object.keys(c.outstanding).length ? esc(fmtMoneyMap(c.outstanding)) : 'none'}</td>
+                </tr>\`).join('')}
+            </tbody>
+          </table>
         </div>
       \`;
 
@@ -1017,7 +1058,23 @@ function renderHtmlApp(initialState: unknown): string {
       renderBrief(STATE.initialBrief, 'Who owes us money?');
     }
 
+    async function refreshFromEndpoints() {
+      try {
+        const [hRes, fRes] = await Promise.all([fetch('/health'), fetch('/finance')]);
+        if (hRes.ok && fRes.ok) {
+          STATE.health = await hRes.json();
+          STATE.finance = await fRes.json();
+          renderKpis();
+          renderInvoices();
+          renderSideCards();
+        }
+      } catch {
+        // fallback to server-rendered STATE
+      }
+    }
+
     renderAll();
+    refreshFromEndpoints();
   </script>
 </body>
 </html>`;
