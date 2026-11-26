@@ -354,7 +354,7 @@ function renderHtmlApp(): string {
             <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
             <span class="text-[11px] text-slate-600 font-medium">API Healthy</span>
           </div>
-          <a href="/health" target="_blank" class="text-[11px] font-mono-code text-indigo-600 hover:underline">/health</a>
+          <a href="/health" onclick="inspectEndpoint(event, '/health')" class="text-[11px] font-mono-code text-indigo-600 hover:underline">/health</a>
         </div>
       </div>
     </div>
@@ -371,8 +371,8 @@ function renderHtmlApp(): string {
         </div>
       </div>
       <div class="flex items-center gap-2.5">
-        <a href="/health" target="_blank" class="hidden sm:inline-flex items-center px-2.5 py-1 text-[11px] font-mono-code font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md">/health</a>
-        <a href="/finance" target="_blank" class="hidden sm:inline-flex items-center px-2.5 py-1 text-[11px] font-mono-code font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md">/finance</a>
+        <a href="/health" onclick="inspectEndpoint(event, '/health')" class="hidden sm:inline-flex items-center px-2.5 py-1 text-[11px] font-mono-code font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md">/health</a>
+        <a href="/finance" onclick="inspectEndpoint(event, '/finance')" class="hidden sm:inline-flex items-center px-2.5 py-1 text-[11px] font-mono-code font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md">/finance</a>
         <button onclick="handleSync()" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Sync now">
           <span class="material-symbols-outlined text-[19px]" id="top-sync-icon">sync</span>
         </button>
@@ -432,6 +432,9 @@ function renderHtmlApp(): string {
           <button onclick="switchPage('people')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-semibold">People</button>
           <button onclick="switchPage('runs')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-semibold">Sync History</button>
         </div>
+
+        <!-- ENDPOINT INSPECTOR PANEL -->
+        <div id="endpoint-panel" class="hidden fintech-card p-5 flex-col gap-3"></div>
 
         <!-- ON-DEMAND GATE -->
         <div id="gate-card" class="fintech-card p-6 md:p-8 flex flex-col items-start gap-4">
@@ -1073,6 +1076,96 @@ function renderHtmlApp(): string {
       const orig = btn.innerHTML;
       btn.innerHTML = '<span class="material-symbols-outlined text-[14px]">check</span> Copied!';
       setTimeout(() => { btn.innerHTML = orig; }, 1600);
+    }
+
+    async function inspectEndpoint(event, endpoint) {
+      if (event) event.preventDefault();
+      const panel = document.getElementById('endpoint-panel');
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+      panel.innerHTML = '<div class="text-xs font-mono-code text-slate-500">Loading ' + esc(endpoint) + '...</div>';
+      try {
+        const res = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(endpoint + ' returned HTTP ' + res.status);
+        const payload = await res.json();
+        renderEndpointPanel(endpoint, payload);
+      } catch (err) {
+        panel.innerHTML = '<div class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono-code">' + esc(err?.message ?? 'Request failed') + '</div>';
+      }
+    }
+
+    function closeEndpointPanel() {
+      const panel = document.getElementById('endpoint-panel');
+      panel.classList.add('hidden');
+      panel.classList.remove('flex');
+    }
+
+    function renderEndpointPanel(endpoint, data) {
+      const panel = document.getElementById('endpoint-panel');
+      const header = '<div class="flex items-center justify-between pb-2.5 border-b border-slate-100"><div class="flex items-center gap-2"><span class="text-xs font-bold uppercase tracking-wider font-mono-code text-indigo-700">' + esc(endpoint) + '</span><span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-mono-code font-semibold">200 OK</span></div><button onclick="closeEndpointPanel()" class="text-xs font-mono-code text-slate-500 hover:text-slate-900 cursor-pointer">Close</button></div>';
+
+      if (endpoint.startsWith('/health')) {
+        const fin = data?.connectors?.finance ?? {};
+        const hr = data?.connectors?.hr ?? {};
+        const b = fin?.breakdown ?? {};
+        panel.innerHTML = header + \`
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div class="text-slate-500 font-mono-code text-[10px] uppercase">Service &amp; Tests</div>
+              <div class="font-bold text-slate-900 mt-1">\${esc(data?.service ?? '—')} (\${esc(data?.status ?? '—')})</div>
+              <div class="text-emerald-700 font-mono-code mt-0.5">\${data?.tests?.passing ?? 0}/\${data?.tests?.total ?? 0} tests \${esc(data?.tests?.status ?? '—')}</div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div class="text-slate-500 font-mono-code text-[10px] uppercase">Finance (\${esc(fin?.source ?? '—')})</div>
+              <div class="font-bold text-slate-900 mt-1">\${fin?.totalRecords ?? 0} records</div>
+              <div class="text-slate-600 font-mono-code mt-0.5">\${b?.accounts ?? 0} accts &bull; \${b?.parties ?? 0} parties &bull; \${b?.invoices ?? 0} inv &bull; \${b?.bankTransactions ?? 0} txns</div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div class="text-slate-500 font-mono-code text-[10px] uppercase">HR (\${esc(hr?.source ?? '—')})</div>
+              <div class="font-bold text-slate-900 mt-1">\${hr?.totalRecords ?? 0} employees</div>
+              <div class="text-slate-600 font-mono-code mt-0.5">Synced: \${esc(fmtDateShort(hr?.syncedAt))}</div>
+            </div>
+          </div>\`;
+        return;
+      }
+
+      if (endpoint.startsWith('/finance')) {
+        const cashRows = (data?.cash ?? []).map(c =>
+          '<div class="flex justify-between py-1 border-b border-slate-100 last:border-0"><span>' + esc(c?.name ?? '—') + '</span><strong class="font-mono-code">' + esc(fmtMoneyMap(c?.balance)) + '</strong></div>'
+        ).join('');
+        const spendRows = (data?.spendByAccount ?? []).map(s =>
+          '<div class="flex justify-between py-1 border-b border-slate-100 last:border-0"><span>' + esc(s?.name ?? '—') + '</span><strong class="font-mono-code">' + esc(fmtMoneyMap(s?.total)) + '</strong></div>'
+        ).join('');
+        const custRows = (data?.biggestCustomers ?? []).map(c =>
+          '<div class="flex justify-between py-1 border-b border-slate-100 last:border-0"><span>' + esc(c?.name ?? '—') + '</span><strong class="font-mono-code">' + esc(fmtMoneyMap(c?.invoiced)) + '</strong></div>'
+        ).join('');
+        panel.innerHTML = header + \`
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div class="text-slate-500 font-mono-code text-[10px] uppercase mb-1.5">Cash Accounts</div>
+              \${cashRows || '<div class="text-slate-400">—</div>'}
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div class="text-slate-500 font-mono-code text-[10px] uppercase mb-1.5">Spend (\${esc(data?.invoiced?.lastMonth?.period ?? '—')})</div>
+              \${spendRows || '<div class="text-slate-400">—</div>'}
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div class="text-slate-500 font-mono-code text-[10px] uppercase mb-1.5">Biggest Customers</div>
+              \${custRows || '<div class="text-slate-400">—</div>'}
+            </div>
+          </div>\`;
+        return;
+      }
+
+      if (endpoint.startsWith('/brief')) {
+        const figs = (data?.figures ?? []).map(f =>
+          '<span class="px-2 py-1 rounded bg-slate-100 text-[11px] font-mono-code">' + esc(f?.label ?? '—') + ': <strong>' + esc(f?.value ?? '—') + '</strong></span>'
+        ).join('');
+        panel.innerHTML = header + '<div class="text-sm font-semibold text-slate-900">' + esc(data?.answer ?? '—') + '</div><div class="flex flex-wrap gap-2">' + figs + '</div>';
+        return;
+      }
+
+      panel.innerHTML = header + '<div class="text-xs text-slate-600">Loaded ' + esc(endpoint) + ' (' + (data?.finance?.recordCounts?.total ?? 0) + ' finance records, ' + (data?.people?.totalRecords ?? 0) + ' HR records)</div>';
     }
 
     function renderGate() {
