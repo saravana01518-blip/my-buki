@@ -881,7 +881,7 @@ function renderHtmlApp(): string {
       document.getElementById('health-card').innerHTML = \`
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div class="flex items-center gap-2">
-            <div class="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><span class="material-symbols-outlined text-[16px]">lan</span></div>
+            <div class="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-7 5M12 12l7 5"/></svg></div>
             <h3 class="text-sm font-bold text-slate-900 tracking-tight m-0">Connector &amp; Sync Health</h3>
           </div>
           <span class="text-[10px] font-mono-code font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200">Sage v3.1</span>
