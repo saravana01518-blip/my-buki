@@ -277,8 +277,7 @@ function buildHealthData(store: Store) {
   };
 }
 
-function renderHtmlApp(initialState: unknown): string {
-  const serialized = JSON.stringify(initialState).replace(/</g, "\\u003c");
+function renderHtmlApp(): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -434,8 +433,29 @@ function renderHtmlApp(initialState: unknown): string {
           <button onclick="switchPage('runs')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-semibold">Sync History</button>
         </div>
 
+        <!-- ON-DEMAND GATE -->
+        <div id="gate-card" class="fintech-card p-6 md:p-8 flex flex-col items-start gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+              <span class="material-symbols-outlined text-[22px]">cloud_download</span>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 m-0">Load Sage v3.1 &amp; Connector Data</h2>
+              <p class="text-xs text-slate-500 m-0">Click below to fetch live figures from <code>/health</code>, <code>/finance</code>, and <code>/api/state</code>.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <button id="load-data-btn" onclick="fetchLiveData()" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]" id="load-btn-icon">download</span>
+              <span id="load-btn-label">Load Live Data</span>
+            </button>
+            <span id="load-status-msg" class="text-xs font-mono-code text-slate-500"></span>
+          </div>
+          <div id="load-error-box" class="hidden w-full p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono-code"></div>
+        </div>
+
         <!-- FINANCE PAGE -->
-        <div id="page-finance" class="flex flex-col gap-6">
+        <div id="page-finance" class="hidden flex-col gap-6">
           <!-- KPI Metrics Ribbon -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-grid"></div>
 
@@ -581,7 +601,9 @@ function renderHtmlApp(initialState: unknown): string {
   </div>
 
   <script>
-    let STATE = ${serialized};
+    let STATE = null;
+    let LOADING = false;
+    let ERROR = null;
     let ACTIVE_FILTER = 'all';
     let SEARCH_TERM = '';
 
@@ -1005,6 +1027,10 @@ function renderHtmlApp(initialState: unknown): string {
     }
 
     function switchPage(page) {
+      if (!STATE) {
+        renderGate();
+        return;
+      }
       ['finance', 'people', 'runs'].forEach(p => {
         document.getElementById('page-' + p).classList.toggle('hidden', p !== page);
         document.getElementById('page-' + p).classList.toggle('flex', p === page);
@@ -1049,7 +1075,83 @@ function renderHtmlApp(initialState: unknown): string {
       setTimeout(() => { btn.innerHTML = orig; }, 1600);
     }
 
+    function renderGate() {
+      const gate = document.getElementById('gate-card');
+      const finPage = document.getElementById('page-finance');
+      const btn = document.getElementById('load-data-btn');
+      const label = document.getElementById('load-btn-label');
+      const icon = document.getElementById('load-btn-icon');
+      const errBox = document.getElementById('load-error-box');
+      const statusMsg = document.getElementById('load-status-msg');
+
+      btn.disabled = LOADING;
+      icon.classList.toggle('animate-spin', LOADING);
+      label.textContent = LOADING ? 'Loading...' : STATE ? 'Refresh Live Data' : 'Load Live Data';
+      statusMsg.textContent = LOADING ? 'Fetching /health, /finance, /api/state...' : '';
+
+      if (ERROR) {
+        errBox.textContent = ERROR;
+        errBox.classList.remove('hidden');
+      } else {
+        errBox.classList.add('hidden');
+      }
+
+      if (STATE) {
+        gate.classList.add('hidden');
+        finPage.classList.remove('hidden');
+        finPage.classList.add('flex');
+      } else {
+        gate.classList.remove('hidden');
+        finPage.classList.add('hidden');
+        finPage.classList.remove('flex');
+      }
+    }
+
+    async function fetchLiveData() {
+      LOADING = true;
+      ERROR = null;
+      renderGate();
+      try {
+        const [hRes, fRes, sRes, bRes] = await Promise.all([
+          fetch('/health'),
+          fetch('/finance'),
+          fetch('/api/state'),
+          fetch('/brief?q=' + encodeURIComponent('Who owes us money?')),
+        ]);
+        if (!hRes.ok) throw new Error('/health returned HTTP ' + hRes.status);
+        if (!fRes.ok) throw new Error('/finance returned HTTP ' + fRes.status);
+        if (!sRes.ok) throw new Error('/api/state returned HTTP ' + sRes.status);
+        if (!bRes.ok) throw new Error('/brief returned HTTP ' + bRes.status);
+
+        const [health, finance, fullState, initialBrief] = await Promise.all([
+          hRes.json(),
+          fRes.json(),
+          sRes.json(),
+          bRes.json(),
+        ]);
+
+        STATE = {
+          health,
+          finance,
+          people: fullState?.people ?? { totalRecords: 0, onPayroll: 0, notStarted: 0, joinedThisMonth: 0, joinedLastMonth: 0, roster: [] },
+          runs: fullState?.runs ?? [],
+          initialBrief,
+        };
+        renderAll();
+      } catch (err) {
+        ERROR = err instanceof Error ? err.message : 'Failed to fetch live data';
+      } finally {
+        LOADING = false;
+        renderGate();
+      }
+    }
+
     function renderAll() {
+      if (!STATE) {
+        renderGate();
+        return;
+      }
+      renderGate();
       renderKpis();
       renderInvoices();
       renderSideCards();
@@ -1058,23 +1160,7 @@ function renderHtmlApp(initialState: unknown): string {
       renderBrief(STATE.initialBrief, 'Who owes us money?');
     }
 
-    async function refreshFromEndpoints() {
-      try {
-        const [hRes, fRes] = await Promise.all([fetch('/health'), fetch('/finance')]);
-        if (hRes.ok && fRes.ok) {
-          STATE.health = await hRes.json();
-          STATE.finance = await fRes.json();
-          renderKpis();
-          renderInvoices();
-          renderSideCards();
-        }
-      } catch {
-        // fallback to server-rendered STATE
-      }
-    }
-
     renderAll();
-    refreshFromEndpoints();
   </script>
 </body>
 </html>`;
@@ -1157,14 +1243,7 @@ export async function createServer(): Promise<http.Server> {
         });
         return;
       }
-      const initialState = {
-        health: buildHealthData(store),
-        finance: finData,
-        people: buildPeopleData(store, now),
-        runs: store.runs.slice(0, 20),
-        initialBrief: answerBrief("Who owes us money?", store, now),
-      };
-      sendHtml(res, 200, renderHtmlApp(initialState));
+      sendHtml(res, 200, renderHtmlApp());
       return;
     }
 
